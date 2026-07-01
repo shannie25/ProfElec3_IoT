@@ -2,11 +2,11 @@ import cv2
 import face_recognition
 
 ref_images = [
-    face_recognition.load_image_file("assets/Student1.jpg"),
-    face_recognition.load_image_file("assets/Student2.jpg"),
-    face_recognition.load_image_file("assets/Student3.jpg"),
-    face_recognition.load_image_file("assets/Student4.jpg"),
-    face_recognition.load_image_file("assets/Student5.jpg")
+    face_recognition.load_image_file("admin/Student1.jpg"),
+    face_recognition.load_image_file("admin/Student2.jpg"),
+    face_recognition.load_image_file("admin/Student3.jpg"),
+    face_recognition.load_image_file("admin/Student4.jpg"),
+    face_recognition.load_image_file("admin/Student5.jpg")
 ]
 
 names = ["Annie", "Arnado", "Magsayo", "Arante", "Charles"]
