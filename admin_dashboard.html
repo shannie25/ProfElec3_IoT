@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SENTRY — Room IC1004 Monitoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F6F8; --panel:#FFFFFF; --panel-2:#F1F3F6; --line:#E1E5EA;
+  --text:#161B22; --muted:#6B7480;
+  --green:#1E9E5A; --green-dim:#E7F7EE; --green-border:#A9E4C2;
+  --red:#D93025; --red-dim:#FDECEB; --red-border:#F3B9B3;
+  --orange:#C9740A; --orange-dim:#FCF0DD; --orange-border:#F1CE94;
+  --blue:#2472D4; --blue-dim:#E9F2FD; --blue-border:#B4D4F7;
+  --sans:'Syne',sans-serif; --mono:'Space Mono',monospace;
+}
+.icon-svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px;flex-shrink:0;}
+.dot-ind{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-ind.green{background:var(--green);}
+.dot-ind.red{background:var(--red);}
+.dot-ind.orange{background:var(--orange);}
+.dot-ind.idle{background:var(--muted);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;}
+
+/* ===== LOGIN ===== */
+#loginView{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 30% 30%,rgba(46,204,113,.07),transparent 50%),
+             radial-gradient(circle at 70% 70%,rgba(231,76,60,.05),transparent 50%),var(--bg);
+  padding:24px;}
+.login-card{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;padding:40px 36px;position:relative;overflow:hidden;}
+.login-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--green),var(--orange),var(--red));}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:32px;}
+.brand-icon{width:36px;height:36px;background:var(--green-dim);border:1px solid var(--green-border);
+  border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.brand-name{font-family:var(--sans);font-weight:800;font-size:18px;letter-spacing:.06em;}
+.brand-sub{color:var(--muted);font-size:11px;font-family:var(--mono);margin-top:2px;}
+.scan-frame{width:100%;aspect-ratio:4/3;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:12px;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;margin-bottom:20px;}
+.corner{position:absolute;width:24px;height:24px;}
+.tl{top:10px;left:10px;border-top:2px solid var(--green);border-left:2px solid var(--green);}
+.tr{top:10px;right:10px;border-top:2px solid var(--green);border-right:2px solid var(--green);}
+.bl{bottom:10px;left:10px;border-bottom:2px solid var(--green);border-left:2px solid var(--green);}
+.br{bottom:10px;right:10px;border-bottom:2px solid var(--green);border-right:2px solid var(--green);}
+.scan-line{position:absolute;left:6%;right:6%;height:2px;background:var(--green);
+  box-shadow:0 0 12px var(--green);top:10%;animation:scan 2.6s ease-in-out infinite;}
+@keyframes scan{0%,100%{top:10%;opacity:.9;}50%{top:88%;opacity:.3;}}
+.scan-text{color:var(--muted);font-size:12px;font-family:var(--mono);text-align:center;line-height:1.7;z-index:1;}
+.btn{width:100%;padding:14px;border-radius:9px;border:none;font-family:var(--sans);
+  font-weight:700;font-size:14px;cursor:pointer;transition:opacity .15s,transform .12s;}
+.btn:active{transform:scale(.98);}
+.btn-primary{background:var(--green);color:#03140A;}
+.btn-primary:hover{opacity:.9;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line);margin-top:10px;}
+.btn-ghost:hover{color:var(--text);border-color:#2E3A48;}
+.divider{display:flex;align-items:center;gap:10px;margin:20px 0;color:var(--muted);font-size:11px;font-family:var(--mono);}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line);}
+.id-form{display:none;flex-direction:column;gap:10px;}
+.id-form.active{display:flex;}
+.id-form input{background:var(--panel-2);border:1px solid var(--line);border-radius:9px;
+  padding:13px 14px;color:var(--text);font-family:var(--mono);font-size:13px;}
+.id-form input:focus{outline:none;border-color:var(--green);}
+.login-status{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;margin-top:14px;min-height:14px;}
+
+/* ===== TOPBAR ===== */
+#dashView{display:none;min-height:100vh;}
+#dashView.active{display:block;}
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 28px;border-bottom:1px solid var(--line);background:var(--panel);
+  position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:16px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.logo{font-weight:800;font-size:15px;letter-spacing:.08em;}
+.room-pill{font-family:var(--mono);font-size:10px;color:var(--muted);border:1px solid var(--line);
+  border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:6px;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.2;}}
+.clock{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.notif-btn{position:relative;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:8px;padding:8px 10px;cursor:pointer;font-size:14px;color:var(--text);}
+.notif-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;
+  font-family:var(--mono);font-size:9px;border-radius:20px;padding:2px 5px;min-width:16px;text-align:center;}
+.signout{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--muted);
+  background:none;border:1px solid var(--line);padding:8px 14px;border-radius:8px;cursor:pointer;}
+.signout:hover{color:var(--text);}
+
+/* ===== LAYOUT ===== */
+.wrap{max-width:1280px;margin:0 auto;padding:24px 28px;}
+.section-title{font-size:14px;font-weight:700;letter-spacing:.04em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.section-title span{color:var(--muted);font-weight:400;font-size:12px;font-family:var(--mono);}
+
+/* ===== CAMERA FEEDS ===== */
+.cam-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+@media(max-width:768px){.cam-grid{grid-template-columns:1fr;}}
+.cam-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+.cam-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--line);}
+.cam-label{font-family:var(--mono);font-size:11px;font-weight:700;display:flex;align-items:center;gap:7px;}
+.cam-status{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:20px;}
+.cam-status.online{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);}
+.cam-status.offline{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
+.cam-feed{position:relative;aspect-ratio:16/9;background:var(--panel-2);}
+.cam-feed img,.cam-feed video{width:100%;height:100%;object-fit:cover;display:block;}
+.cam-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;color:var(--muted);gap:10px;font-family:var(--mono);font-size:11px;text-align:center;line-height:1.7;}
+.cam-placeholder .icon{font-size:28px;opacity:.4;}
+.cam-url-bar{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line);background:var(--panel-2);}
+.cam-url-bar input{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:7px;
+  padding:7px 10px;color:var(--text);font-family:var(--mono);font-size:11px;}
+.cam-url-bar input:focus{outline:none;border-color:var(--green);}
+.cam-url-bar button{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);
+  border-radius:7px;padding:7px 12px;font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap;}
+
+/* ===== STATS ROW ===== */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
+@media(max-width:960px){.stats-row{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;}
+.stat-eyebrow{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
+.stat-val{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;}
+.stat-label{color:var(--muted);font-size:11px;margin-top:6px;}
+.stat-card.red .stat-val{color:var(--red);}
+.stat-card.green .stat-val{color:var(--green);}
+.stat-card.orange .stat-val{color:var(--orange);}
+.stat-card.blue .stat-val{color:var(--blue);}
+
+/* ===== MAIN GRID ===== */
+.main-grid{display:grid;grid-template-columns:1fr 320px;gap:20px;margin-bottom:24px;}
+@media(max-width:900px){.main-grid{grid-template-columns:1fr;}}
+
+/* ===== STATUS + OCCUPANCY CARDS ===== */
+.status-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;}
+.room-status-card.expected{border-color:var(--green-border);}
+.room-status-card.anomaly{border-color:var(--red-border);}
+.room-status-card.idle{border-color:var(--line);}
+.room-status-card.occupied{border-color:var(--orange-border);}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
+.status-headline{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;margin-bottom:6px;}
+.status-dot{width:10px;height:10px;border-radius:50%;}
+.status-detail{color:var(--muted);font-size:12px;font-family:var(--mono);}
+.status-time{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px;}
+.occupancy-num{font-family:var(--mono);font-size:42px;font-weight:700;line-height:1;margin:8px 0;}
+.occupancy-label{font-size:12px;color:var(--muted);}
+.schedule-strip{display:flex;gap:3px;margin-top:14px;}
+.seg{flex:1;height:6px;border-radius:3px;background:var(--line);}
+.seg.class{background:var(--green-dim);border:1px solid var(--green-border);}
+.seg.gap-seg{background:var(--line);}
+.seg.now{position:relative;}
+.seg.now::after{content:"▼";position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--text);}
+.schedule-labels{display:flex;justify-content:space-between;margin-top:5px;font-family:var(--mono);font-size:9px;color:var(--muted);}
+.cam-health{display:flex;flex-direction:column;gap:8px;}
+.cam-health-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;
+  background:var(--panel-2);border:1px solid var(--line);border-radius:8px;}
+.cam-health-name{font-family:var(--mono);font-size:12px;display:flex;align-items:center;gap:8px;}
+.cam-health-badge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:20px;}
+
+/* ===== NOTIFICATION PANEL ===== */
+.notif-panel{display:flex;flex-direction:column;}
+.notif-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.notif-list{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;scrollbar-width:thin;scroll-behavior:smooth;}
+.notif-list::-webkit-scrollbar{width:4px;}
+.notif-list::-webkit-scrollbar-track{background:var(--panel-2);}
+.notif-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+.notif-item{padding:12px 14px;border-radius:9px;border:1px solid var(--line);font-size:12px;}
+.notif-item.anomaly{background:var(--red-dim);border-color:var(--red-border);}
+.notif-item.expected{background:var(--green-dim);border-color:var(--green-border);}
+.notif-item.idle{background:var(--panel-2);}
+.notif-item .notif-icon{font-size:14px;margin-bottom:5px;}
+.notif-item .notif-msg{font-weight:600;margin-bottom:4px;}
+.notif-item .notif-meta{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.notif-empty{text-align:center;color:var(--muted);font-family:var(--mono);font-size:11px;padding:40px 20px;
+  border:1px dashed var(--line);border-radius:9px;}
+
+/* ===== LOG TABLE ===== */
+.log-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.search-box{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);
+  border-radius:9px;padding:0 12px;flex:1;min-width:180px;}
+.search-box input{background:transparent;border:none;color:var(--text);font-family:var(--mono);
+  font-size:12px;padding:9px 0;flex:1;}
+.search-box input:focus{outline:none;}
+.search-icon{color:var(--muted);font-size:13px;}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{font-family:var(--mono);font-size:10.5px;padding:6px 12px;border-radius:20px;
+  border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;}
+.chip.active{background:var(--panel-2);color:var(--text);border-color:#3a4450;}
+.date-filters{display:flex;gap:6px;}
+.export-row{display:flex;gap:8px;margin-bottom:14px;}
+.export-btn{font-family:var(--mono);font-size:11px;padding:8px 14px;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;font-weight:700;}
+.export-btn.csv{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green);}
+.export-btn.pdf{background:var(--blue-dim);border:1px solid var(--blue-border);color:var(--blue);}
+.export-btn:hover{opacity:.85;}
+.log-table-wrap{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);
+  text-transform:uppercase;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel-2);}
+td{padding:12px 16px;border-bottom:1px solid var(--line);font-size:13px;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(0,0,0,.025);}
+.ts{font-family:var(--mono);color:var(--muted);font-size:11px;white-space:nowrap;}
+.tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10.5px;padding:4px 10px;border-radius:20px;}
+.tag.expected{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);}
+.tag.anomaly{background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);}
+.tag.idle{background:var(--panel-2);color:var(--muted);border:1px solid var(--line);}
+.tag-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+.pc{font-family:var(--mono);font-size:12px;text-align:center;}
+.empty-row td{text-align:center;color:var(--muted);font-family:var(--mono);padding:40px;}
+
+/* ===== FOOTER ===== */
+footer{text-align:center;padding:32px;border-top:1px solid var(--line);margin-top:8px;}
+footer .foot-title{font-weight:800;font-size:13px;letter-spacing:.06em;margin-bottom:6px;}
+footer .foot-sub{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:2;}
+
+/* ===== OVERLAY NOTIFICATION PANEL ===== */
+.notif-overlay{display:none;position:fixed;top:60px;right:20px;width:320px;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;z-index:200;
+  box-shadow:0 16px 48px rgba(20,25,35,.12);overflow:hidden;}
+.notif-overlay.open{display:block;}
+.notif-overlay-header{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--line);}
+.notif-overlay-header h4{font-size:13px;font-weight:700;}
+.notif-overlay-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;}
+.notif-overlay-list{max-height:400px;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="loginView">
+  <div class="login-card">
+    <div class="brand">
+      <div class="brand-icon"><svg class="icon-svg" viewBox="0 0 24 24" style="width:18px;height:18px;"><path d="M2 6a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/><path d="M15 9.5l6-3.5v12l-6-3.5"/></svg></div>
+      <div>
+        <div class="brand-name">SENTRY</div>
+        <div class="brand-sub">ROOM IC1004 · ADMIN ACCESS</div>
+      </div>
+    </div>
+    <div id="faceStep">
+      <div class="scan-frame">
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+        <div class="scan-line"></div>
+        <div class="scan-text">POSITION YOUR FACE<br>WITHIN THE FRAME</div>
+      </div>
+      <button class="btn btn-primary" onclick="simulateFaceLogin()"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg> Scan Face</button>
+      <button class="btn btn-ghost" onclick="showIdForm()">Use ID login instead</button>
+    </div>
+    <div class="id-form" id="idForm">
+      <div class="divider">BACKUP LOGIN</div>
+      <input type="text" placeholder="Admin ID" id="adminId">
+      <input type="password" placeholder="Passcode" id="adminPass">
+      <button class="btn btn-primary" onclick="simulateIdLogin()">Sign In</button>
+      <button class="btn btn-ghost" onclick="showFaceStep()">← Back to face recognition</button>
+    </div>
+    <div class="login-status" id="loginStatus"></div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashView">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo" style="display:flex;align-items:center;gap:7px;"><svg class="icon-svg" viewBox="0 0 24 24" style="vertical-align:0;"><path d="M2 6a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/><path d="M15 9.5l6-3.5v12l-6-3.5"/></svg>SENTRY</div>
+      <div class="room-pill"><span class="live-dot"></span>ROOM IC1004 · LIVE</div>
+    </div>
+    <div class="topbar-right">
+      <div class="clock" id="clock"></div>
+      <div class="notif-btn" onclick="toggleNotifOverlay()">
+        <svg class="icon-svg" viewBox="0 0 24 24" style="vertical-align:-2px;"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-badge" id="notifBadge">0</span>
+      </div>
+      <button class="signout" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <!-- Notification Overlay -->
+  <div class="notif-overlay" id="notifOverlay">
+    <div class="notif-overlay-header">
+      <h4 style="display:flex;align-items:center;gap:6px;"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifications</h4>
+      <button class="notif-overlay-close" onclick="toggleNotifOverlay()"><svg class="icon-svg" viewBox="0 0 24 24" style="width:14px;height:14px;vertical-align:-2px;"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button>
+    </div>
+    <div class="notif-overlay-list" id="notifOverlayList"></div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- CAMERA FEEDS -->
+    <div class="section-title">Live Camera Feeds <span>// connect stream URL below each feed</span></div>
+    <div class="cam-grid">
+      <div class="cam-card">
+        <div class="cam-header">
+          <div class="cam-label"><span class="live-dot"></span>CAMERA 1</div>
+          <div class="cam-status online" id="cam1Status"><span class="dot-ind green"></span> Online</div>
+        </div>
+        <div class="cam-feed" id="cam1Feed">
+          <div class="cam-placeholder">
+            <div class="icon"><svg class="icon-svg" viewBox="0 0 24 24" style="width:28px;height:28px;"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+            <div>CAM 1 — NO STREAM URL<br>Enter URL below to connect</div>
+          </div>
+        </div>
+        <div class="cam-url-bar">
+          <input type="text" id="cam1Url" placeholder="e.g. http://192.168.1.10:81/stream">
+          <button onclick="connectCamera(1)">Connect</button>
+        </div>
+      </div>
+      <div class="cam-card">
+        <div class="cam-header">
+          <div class="cam-label"><span class="live-dot" style="background:var(--red);box-shadow:none;animation:none;"></span>CAMERA 2</div>
+          <div class="cam-status offline" id="cam2Status"><span class="dot-ind red"></span> Offline</div>
+        </div>
+        <div class="cam-feed" id="cam2Feed">
+          <div class="cam-placeholder">
+            <div class="icon"><svg class="icon-svg" viewBox="0 0 24 24" style="width:28px;height:28px;"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+            <div>CAM 2 — NO STREAM URL<br>Enter URL below to connect</div>
+          </div>
+        </div>
+        <div class="cam-url-bar">
+          <input type="text" id="cam2Url" placeholder="e.g. http://192.168.1.11:81/stream">
+          <button onclick="connectCamera(2)">Connect</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat-card green">
+        <div class="stat-eyebrow">Motion Events</div>
+        <div class="stat-val" id="statMotion">0</div>
+        <div class="stat-label">Today</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-eyebrow">Anomalies</div>
+        <div class="stat-val" id="statAnomalies">0</div>
+        <div class="stat-label">Unscheduled motion</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-eyebrow">People Entered</div>
+        <div class="stat-val" id="statPeople">0</div>
+        <div class="stat-label">Estimated today</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-eyebrow">Longest Empty</div>
+        <div class="stat-val" id="statEmpty">—</div>
+        <div class="stat-label">Minutes idle</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-eyebrow">Avg Occupancy</div>
+        <div class="stat-val" id="statAvg">—</div>
+        <div class="stat-label">Persons per event</div>
+      </div>
+    </div>
+
+    <!-- STATUS + OCCUPANCY + CAM HEALTH -->
+    <div class="main-grid">
+      <div>
+        <div class="status-row">
+          <!-- Room Status -->
+          <div class="card room-status-card" id="roomStatusCard">
+            <div class="eyebrow">Room Status</div>
+            <div class="status-headline">
+              <span class="status-dot" id="statusDot" style="background:var(--green);box-shadow:0 0 8px var(--green);"></span>
+              <span id="statusHeadline">Initializing…</span>
+            </div>
+            <div class="status-detail" id="statusDetail">Checking schedule…</div>
+            <div class="status-time" id="statusTime"></div>
+            <div class="schedule-strip" style="margin-top:14px;">
+              <div class="seg class"></div>
+              <div class="seg class"></div>
+              <div class="seg gap-seg now"></div>
+              <div class="seg class"></div>
+              <div class="seg gap-seg"></div>
+            </div>
+            <div class="schedule-labels">
+              <span>9:20</span><span>11:10</span><span>1:00</span><span>2:50</span><span>4:40+</span>
+            </div>
+          </div>
+          <!-- Occupancy -->
+          <div class="card" id="occupancyCard">
+            <div class="eyebrow">Current Occupancy</div>
+            <div class="occupancy-num" id="occupancyNum">—</div>
+            <div class="occupancy-label" id="occupancyLabel">Persons inside</div>
+            <div style="margin-top:14px;">
+              <div class="eyebrow" style="margin-bottom:8px;">Camera Health</div>
+              <div class="cam-health">
+                <div class="cam-health-item">
+                  <div class="cam-health-name"><svg class="icon-svg" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M2 6a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/><path d="M15 9.5l6-3.5v12l-6-3.5"/></svg> Camera 1</div>
+                  <div class="cam-health-badge online" id="healthCam1" style="background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);border-radius:20px;padding:3px 9px;font-family:var(--mono);font-size:10px;"><span class="dot-ind green"></span> Online</div>
+                </div>
+                <div class="cam-health-item">
+                  <div class="cam-health-name"><svg class="icon-svg" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="M2 6a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/><path d="M15 9.5l6-3.5v12l-6-3.5"/></svg> Camera 2</div>
+                  <div class="cam-health-badge" id="healthCam2" style="background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);border-radius:20px;padding:3px 9px;font-family:var(--mono);font-size:10px;"><span class="dot-ind red"></span> Offline</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification Panel -->
+        <div class="section-title" style="margin-top:6px;">Notifications <span id="notifCount">// 0 alerts</span></div>
+        <div id="notifList" style="display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;scrollbar-width:thin;margin-bottom:6px;"></div>
+      </div>
+
+      <!-- RIGHT SIDEBAR (kept minimal) -->
+      <div>
+        <div class="section-title">Quick Summary</div>
+        <div class="card" style="font-family:var(--mono);font-size:11px;color:var(--muted);line-height:2.2;">
+          <div id="summarySchedule"></div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line);">
+            <div style="color:var(--text);font-size:12px;font-weight:700;margin-bottom:6px;">Today's Schedule</div>
+            <div><span class="dot-ind green" style="margin-right:6px;"></span>09:20 – 11:10 &nbsp;Class</div>
+            <div><span class="dot-ind green" style="margin-right:6px;"></span>11:10 – 13:00 &nbsp;Class</div>
+            <div><span class="dot-ind idle" style="margin-right:6px;"></span>13:00 – 14:50 &nbsp;No Class</div>
+            <div><span class="dot-ind green" style="margin-right:6px;"></span>14:50 – 16:40 &nbsp;Class</div>
+            <div><span class="dot-ind idle" style="margin-right:6px;"></span>16:40+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;No Class</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EVENT LOG -->
+    <div class="section-title">Event Log <span id="logCount">// 0 entries</span></div>
+    <div class="log-toolbar">
+      <div class="search-box">
+        <span class="search-icon"><svg class="icon-svg" viewBox="0 0 24 24" style="vertical-align:-3px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></span>
+        <input type="text" id="searchInput" placeholder="Search logs..." oninput="applyFilters()">
+      </div>
+      <div class="filter-chips">
+        <button class="chip active" data-filter="all" onclick="setFilter(this)">All</button>
+        <button class="chip" data-filter="expected" onclick="setFilter(this)"><span class="dot-ind green" style="margin-right:5px;"></span>Expected</button>
+        <button class="chip" data-filter="anomaly" onclick="setFilter(this)"><span class="dot-ind red" style="margin-right:5px;"></span>Anomaly</button>
+        <button class="chip" data-filter="idle" onclick="setFilter(this)"><span class="dot-ind idle" style="margin-right:5px;"></span>No Motion</button>
+      </div>
+      <div class="date-filters">
+        <button class="chip active" data-date="today" onclick="setDateFilter(this)">Today</button>
+        <button class="chip" data-date="yesterday" onclick="setDateFilter(this)">Yesterday</button>
+        <button class="chip" data-date="week" onclick="setDateFilter(this)">This Week</button>
+      </div>
+    </div>
+    <div class="export-row">
+      <button class="export-btn csv" onclick="exportCSV()"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/></svg> Export CSV</button>
+      <button class="export-btn pdf" onclick="exportPDF()"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1"/><path d="M6 17h12v5H6z"/></svg> Export PDF</button>
+    </div>
+    <div class="log-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th><th>Camera</th><th>Motion</th>
+            <th>Person Count</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /wrap -->
+
+  <footer>
+    <div class="foot-title">SENTRY MONITORING SYSTEM</div>
+    <div class="foot-sub">
+      IoT Final Project · Room IC1004<br>
+      Version 1.0 · Real-Time Motion Detection Dashboard
+    </div>
+  </footer>
+</div><!-- /dashView -->
+
+<script>
+// ===== SCHEDULE =====
+const classPeriods = [
+  { start: "09:20", end: "11:10" },
+  { start: "11:10", end: "13:00" },
+  { start: "14:50", end: "16:40" },
+];
+function isClassTime(date = new Date()) {
+  const h = date.getHours(), m = date.getMinutes();
+  const cur = h * 60 + m;
+  return classPeriods.some(p => {
+    const [sh,sm] = p.start.split(":").map(Number);
+    const [eh,em] = p.end.split(":").map(Number);
+    return cur >= sh*60+sm && cur < eh*60+em;
+  });
+}
+
+// ===== STATE =====
+let events = [];
+let currentFilter = "all";
+let currentDateFilter = "today";
+let occupancy = 0;
+let unreadNotifs = 0;
+let adminName = "Admin";
+
+// ===== DUMMY DATA (replace by fetching events_log.json in production) =====
+const dummyEvents = [
+  { time:"2026-06-30 09:22:14", camera:"Cam 1", type:"motion_detected", status:"expected", persons:3 },
+  { time:"2026-06-30 09:24:05", camera:"Cam 2", type:"motion_detected", status:"expected", persons:2 },
+  { time:"2026-06-30 10:05:00", camera:"Cam 1", type:"no_motion",       status:"idle",     persons:0 },
+  { time:"2026-06-30 11:12:33", camera:"Cam 2", type:"motion_detected", status:"expected", persons:5 },
+  { time:"2026-06-30 12:58:00", camera:"Cam 1", type:"no_motion",       status:"idle",     persons:0 },
+  { time:"2026-06-30 13:35:21", camera:"Cam 1", type:"motion_detected", status:"anomaly",  persons:1 },
+  { time:"2026-06-30 13:36:04", camera:"Cam 2", type:"motion_detected", status:"anomaly",  persons:1 },
+  { time:"2026-06-30 13:50:00", camera:"Cam 1", type:"no_motion",       status:"idle",     persons:0 },
+  { time:"2026-06-30 14:52:11", camera:"Cam 2", type:"motion_detected", status:"expected", persons:4 },
+  { time:"2026-06-30 16:42:00", camera:"Cam 1", type:"no_motion",       status:"idle",     persons:0 },
+  { time:"2026-06-30 17:15:42", camera:"Cam 2", type:"motion_detected", status:"anomaly",  persons:2 },
+  { time:"2026-06-30 17:16:30", camera:"Cam 1", type:"no_motion",       status:"idle",     persons:0 },
+];
+
+// ===== FETCH EVENTS (polls events_log.json every 3s in production) =====
+async function fetchEvents() {
+  try {
+    const res = await fetch("events_log.json?t=" + Date.now());
+    if (!res.ok) throw new Error("no file");
+    const data = await res.json();
+    events = data;
+  } catch {
+    events = dummyEvents; // fallback to dummy
+  }
+  applyFilters();
+  updateStats();
+  updateRoomStatus();
+  renderNotifs();
+}
+
+// ===== STATS =====
+function updateStats() {
+  const motionEvts = events.filter(e => e.type === "motion_detected");
+  const anomalies = events.filter(e => e.status === "anomaly");
+  const totalPersons = motionEvts.reduce((s,e) => s + (e.persons||0), 0);
+  const avgPersons = motionEvts.length ? Math.round(totalPersons / motionEvts.length) : 0;
+
+  // longest idle gap (minutes between consecutive events)
+  let longestIdle = 0;
+  for (let i=1; i<events.length; i++) {
+    const a = new Date(events[i-1].time), b = new Date(events[i].time);
+    if (events[i-1].type === "no_motion") {
+      const diff = Math.round((b - a) / 60000);
+      if (diff > longestIdle) longestIdle = diff;
+    }
+  }
+
+  document.getElementById("statMotion").textContent = motionEvts.length;
+  document.getElementById("statAnomalies").textContent = anomalies.length;
+  document.getElementById("statPeople").textContent = totalPersons;
+  document.getElementById("statEmpty").textContent = longestIdle || "—";
+  document.getElementById("statAvg").textContent = avgPersons || "—";
+
+  // occupancy from last event
+  const last = events[events.length - 1];
+  occupancy = last ? (last.persons || 0) : 0;
+  document.getElementById("occupancyNum").textContent = occupancy;
+  document.getElementById("occupancyLabel").textContent =
+    occupancy === 0 ? "Room appears empty" : occupancy === 1 ? "Person inside" : "Persons inside";
+  document.getElementById("occupancyNum").style.color =
+    occupancy === 0 ? "var(--red)" : "var(--green)";
+}
+
+// ===== ROOM STATUS =====
+function updateRoomStatus() {
+  const now = new Date();
+  const inClass = isClassTime(now);
+  const last = events[events.length - 1];
+  const hasMotion = last && last.type === "motion_detected";
+  const card = document.getElementById("roomStatusCard");
+  const dot = document.getElementById("statusDot");
+  const headline = document.getElementById("statusHeadline");
+  const detail = document.getElementById("statusDetail");
+  const timeEl = document.getElementById("statusTime");
+
+  card.className = "card room-status-card";
+  timeEl.textContent = "Last updated: " + now.toLocaleTimeString();
+
+  if (hasMotion && inClass) {
+    card.classList.add("expected");
+    dot.style.background = "var(--green)"; dot.style.boxShadow = "0 0 8px var(--green)";
+    headline.textContent = "Occupied — Expected";
+    detail.textContent = "Motion detected · matches scheduled class block";
+  } else if (hasMotion && !inClass) {
+    card.classList.add("anomaly");
+    dot.style.background = "var(--red)"; dot.style.boxShadow = "0 0 8px var(--red)";
+    headline.textContent = "Anomaly — Unauthorized Motion";
+    detail.textContent = "Motion outside class hours — admin notified";
+  } else if (!hasMotion && inClass) {
+    card.classList.add("occupied");
+    dot.style.background = "var(--orange)"; dot.style.boxShadow = "0 0 8px var(--orange)";
+    headline.textContent = "Class in Session — Room Empty?";
+    detail.textContent = "Class scheduled but no motion recently detected";
+  } else {
+    card.classList.add("idle");
+    dot.style.background = "var(--muted)"; dot.style.boxShadow = "none";
+    headline.textContent = "Room Empty";
+    detail.textContent = "No motion detected · no class scheduled";
+  }
+}
+
+// ===== NOTIFICATIONS =====
+function renderNotifs() {
+  const alerts = events.filter(e => e.status === "anomaly" || e.type === "no_motion");
+  unreadNotifs = events.filter(e => e.status === "anomaly").length;
+  document.getElementById("notifBadge").textContent = unreadNotifs;
+  document.getElementById("notifCount").textContent = `// ${alerts.length} alerts`;
+
+  const html = alerts.length === 0
+    ? '<div class="notif-empty">No notifications yet.</div>'
+    : [...alerts].reverse().map(e => `
+        <div class="notif-item ${e.status === 'anomaly' ? 'anomaly' : 'idle'}">
+          <div class="notif-icon">${e.status === 'anomaly'
+            ? '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+            : '<svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>'}</div>
+          <div class="notif-msg">${e.status === 'anomaly' ? 'Unauthorized Motion Detected' : 'Room Empty'}</div>
+          <div class="notif-meta">${e.time} · ${e.camera}</div>
+        </div>`).join("");
+
+  document.getElementById("notifList").innerHTML = html;
+  document.getElementById("notifOverlayList").innerHTML = html;
+}
+
+function toggleNotifOverlay() {
+  document.getElementById("notifOverlay").classList.toggle("open");
+}
+
+// ===== LOG RENDERING =====
+function applyFilters() {
+  const search = document.getElementById("searchInput")?.value?.toLowerCase() || "";
+  let filtered = events.filter(e => {
+    if (currentFilter !== "all" && e.status !== currentFilter) return false;
+    if (search && !JSON.stringify(e).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  renderLog(filtered);
+  document.getElementById("logCount").textContent = `// ${filtered.length} entries`;
+}
+
+function renderLog(data) {
+  const body = document.getElementById("logBody");
+  if (!data.length) {
+    body.innerHTML = `<tr class="empty-row"><td colspan="5">No events match this filter.</td></tr>`;
+    return;
+  }
+  body.innerHTML = [...data].reverse().map(e => {
+    const label = e.type === "motion_detected" ? "Motion Detected" : "No Motion";
+    const tagLabel = e.status === "expected" ? "Expected" : e.status === "anomaly" ? "Anomaly" : "Idle";
+    return `<tr>
+      <td class="ts">${e.time}</td>
+      <td>${e.camera}</td>
+      <td>${label}</td>
+      <td class="pc">${e.persons > 0 ? e.persons : "—"}</td>
+      <td><span class="tag ${e.status}"><span class="tag-dot"></span>${tagLabel}</span></td>
+    </tr>`;
+  }).join("");
+}
+
+function setFilter(el) {
+  document.querySelectorAll(".filter-chips .chip").forEach(c => c.classList.remove("active"));
+  el.classList.add("active");
+  currentFilter = el.dataset.filter;
+  applyFilters();
+}
+function setDateFilter(el) {
+  document.querySelectorAll(".date-filters .chip").forEach(c => c.classList.remove("active"));
+  el.classList.add("active");
+  currentDateFilter = el.dataset.date;
+  applyFilters();
+}
+
+// ===== EXPORT CSV =====
+function exportCSV() {
+  const rows = [["Timestamp","Camera","Event","Person Count","Status"]];
+  events.forEach(e => rows.push([e.time, e.camera, e.type, e.persons||0, e.status]));
+  const csv = rows.map(r => r.join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+  a.download = "room301_events.csv";
+  a.click();
+}
+
+// ===== EXPORT PDF (simple print) =====
+function exportPDF() {
+  window.print();
+}
+
+// ===== CAMERA CONNECT =====
+function connectCamera(num) {
+  const url = document.getElementById(`cam${num}Url`).value.trim();
+  const feed = document.getElementById(`cam${num}Feed`);
+  const status = document.getElementById(`cam${num}Status`);
+  const health = document.getElementById(`healthCam${num}`);
+  if (!url) return;
+  feed.innerHTML = `<img src="${url}" onerror="cameraError(${num})" style="width:100%;height:100%;object-fit:cover;">`;
+  status.innerHTML = '<span class="dot-ind green"></span> Online';
+  status.className = "cam-status online";
+  health.innerHTML = '<span class="dot-ind green"></span> Online';
+  health.style.background = "var(--green-dim)";
+  health.style.color = "var(--green)";
+  health.style.borderColor = "var(--green-border)";
+}
+function cameraError(num) {
+  const feed = document.getElementById(`cam${num}Feed`);
+  const status = document.getElementById(`cam${num}Status`);
+  const health = document.getElementById(`healthCam${num}`);
+  feed.innerHTML = `<div class="cam-placeholder"><div class="icon"><svg class="icon-svg" viewBox="0 0 24 24" style="width:28px;height:28px;"><path d="M12 3l10 18H2L12 3z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></div><div>Could not load stream<br>${document.getElementById("cam"+num+"Url").value}</div></div>`;
+  status.innerHTML = '<span class="dot-ind red"></span> Offline';
+  status.className = "cam-status offline";
+  health.innerHTML = '<span class="dot-ind red"></span> Offline';
+  health.style.background = "var(--red-dim)";
+  health.style.color = "var(--red)";
+  health.style.borderColor = "var(--red-border)";
+}
+
+// ===== CLOCK =====
+function updateClock() {
+  document.getElementById("clock").textContent = new Date().toLocaleString("en-US",{
+    weekday:"short", month:"short", day:"numeric",
+    hour:"2-digit", minute:"2-digit", second:"2-digit"
+  });
+}
+
+// ===== LOGIN =====
+function showIdForm() {
+  document.getElementById("faceStep").style.display = "none";
+  document.getElementById("idForm").classList.add("active");
+  document.getElementById("loginStatus").textContent = "";
+}
+function showFaceStep() {
+  document.getElementById("idForm").classList.remove("active");
+  document.getElementById("faceStep").style.display = "block";
+  document.getElementById("loginStatus").textContent = "";
+}
+function simulateFaceLogin() {
+  const s = document.getElementById("loginStatus");
+  s.textContent = "Scanning face…";
+  setTimeout(() => {
+    // In production: POST to /api/face-login → { recognized: true, name: "Owen" }
+    adminName = "Admin Owen";
+    s.innerHTML = `<svg class="icon-svg" viewBox="0 0 24 24" style="vertical-align:-3px;"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5"/></svg> Welcome, ${adminName}`;
+    setTimeout(enterDashboard, 600);
+  }, 1400);
+}
+function simulateIdLogin() {
+  const id = document.getElementById("adminId").value;
+  const pass = document.getElementById("adminPass").value;
+  if (!id || !pass) { document.getElementById("loginStatus").textContent = "Fill in both fields."; return; }
+  const s = document.getElementById("loginStatus");
+  s.textContent = "Verifying credentials…";
+  setTimeout(() => {
+    adminName = "Admin";
+    s.innerHTML = `<svg class="icon-svg" viewBox="0 0 24 24" style="vertical-align:-3px;"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5"/></svg> Welcome, ${adminName}`;
+    setTimeout(enterDashboard, 500);
+  }, 1000);
+}
+function enterDashboard() {
+  document.getElementById("loginView").style.display = "none";
+  document.getElementById("dashView").classList.add("active");
+  updateClock();
+  setInterval(updateClock, 1000);
+  fetchEvents();
+  setInterval(fetchEvents, 3000); // real-time polling
+}
+function signOut() {
+  document.getElementById("dashView").classList.remove("active");
+  document.getElementById("loginView").style.display = "flex";
+  showFaceStep();
+  events = [];
+}
+</script>
+</body>
+</html>
