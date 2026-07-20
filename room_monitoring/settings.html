@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SENTRY | Admin Portal & Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#54647a",
+                    "outline-variant": "#c4c5d9",
+                    "surface-dim": "#d9d9e6",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#d0e1fb",
+                    "tertiary-container": "#c24100",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#efefff",
+                    "surface-container-high": "#e7e7f4",
+                    "tertiary-fixed-dim": "#ffb59b",
+                    "inverse-surface": "#2e303a",
+                    "on-primary-fixed": "#001356",
+                    "on-surface": "#191b24",
+                    "background": "#fbf8ff",
+                    "primary-fixed-dim": "#b8c3ff",
+                    "on-tertiary-container": "#ffece6",
+                    "on-primary": "#ffffff",
+                    "on-surface-variant": "#434656",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-secondary-fixed": "#0b1c30",
+                    "surface-container-highest": "#e2e1ef",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#b8c3ff",
+                    "surface-bright": "#fbf8ff",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#380d00",
+                    "secondary-fixed": "#d3e4fe",
+                    "tertiary-fixed": "#ffdbcf",
+                    "surface-container-low": "#f3f2ff",
+                    "surface": "#fbf8ff",
+                    "on-tertiary-fixed-variant": "#812800",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "error": "#ba1a1a",
+                    "secondary": "#505f76",
+                    "surface-variant": "#e2e1ef",
+                    "surface-container": "#ededfa",
+                    "primary-fixed": "#dde1ff",
+                    "on-primary-fixed-variant": "#0035be",
+                    "outline": "#747688",
+                    "inverse-on-surface": "#f0effd",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#0040e0",
+                    "surface-tint": "#124af0",
+                    "primary-container": "#2e5bff",
+                    "tertiary": "#993100",
+                    "on-background": "#191b24",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "2xl": "48px",
+                    "base": "4px",
+                    "gutter": "24px",
+                    "3xl": "64px",
+                    "xl": "32px",
+                    "margin": "32px",
+                    "xs": "4px",
+                    "sm": "8px",
+                    "md": "16px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "label-md": ["JetBrains Mono", "monospace"],
+                    "body-sm": ["Geist", "sans-serif"],
+                    "headline-sm": ["Geist", "sans-serif"],
+                    "body-lg": ["Geist", "sans-serif"],
+                    "headline-lg": ["Geist", "sans-serif"],
+                    "headline-md": ["Geist", "sans-serif"],
+                    "label-sm": ["JetBrains Mono", "monospace"],
+                    "headline-xl": ["Geist", "sans-serif"],
+                    "body-md": ["Geist", "sans-serif"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #F0F2F5; /* Level 0 Base from Style Guidance */
+            color: #191B24;
+            font-family: 'Geist', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .card-surface {
+            background-color: #FFFFFF;
+            border: 1px solid #E2E8F0;
+        }
+        .sidebar-active {
+            border-left: 4px solid #0040E0;
+        }
+        /* Custom Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #E2E8F0;
+            border-radius: 2px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #0040E0;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline-variant flex flex-col py-lg z-50">
+<div class="px-lg mb-2xl">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">SENTRY</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">SENTRY ROOM MONITOR</p>
+</div>
+<nav class="flex-1 px-md space-y-base">
+<a class="flex items-center gap-md text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-low transition-colors group" href="/dashboard">
+<span class="material-symbols-outlined group-hover:text-primary">videocam</span>
+<span class="font-label-md text-label-md">Live View</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-low transition-colors group" href="/logs">
+<span class="material-symbols-outlined group-hover:text-primary">list_alt</span>
+<span class="font-label-md text-label-md">Activity Logs</span>
+</a>
+<a class="flex items-center gap-md bg-secondary-container text-on-secondary-container rounded-lg px-4 py-3 border-l-4 border-primary shadow-sm" href="/settings">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">admin_panel_settings</span>
+<span class="font-label-md text-label-md font-bold">Admin & Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-lg pt-lg border-t border-outline-variant space-y-md">
+<div class="flex items-center gap-md p-2 bg-surface-container-low rounded-xl">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<p id="settingsAdminName" class="font-label-md text-label-md text-on-surface font-bold truncate">Admin</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">SENTRY Administrator</p>
+</div>
+</div>
+<button onclick="logout()" class="w-full flex items-center gap-sm px-3 py-2 rounded-lg text-error hover:bg-error/10 transition-colors font-label-md text-label-md">
+<span class="material-symbols-outlined text-sm">logout</span>
+Logout
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 flex flex-col">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-40 bg-surface border-b border-outline-variant h-16 flex justify-between items-center px-gutter ml-0">
+<div class="flex items-center gap-4">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">Security Monitor</h2>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant">search</span>
+<input id="personnelSearchInput" class="pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all w-64" placeholder="Search personnel..." type="text"/>
+</div>
+</div>
+</header>
+<!-- Scrollable Canvas -->
+<div class="p-gutter space-y-gutter">
+<!-- Class Schedule Upload--->
+<section class="col-span-12 card-surface rounded-xl p-6 space-y-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="calendar_month">calendar_month</span>
+<h4 class="font-headline-sm text-headline-sm">Class Schedule</h4>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Upload a CSV with columns <span class="font-label-sm text-label-sm bg-surface-container-low px-1 py-0.5 rounded">Class Date, Start Time, End Time, Room Name, Course Code</span> to add class periods used for schedule-aware motion alerts. Rows matching a course/room/day already on file are left untouched.</p>
+<div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+<input id="scheduleCsvInput" type="file" accept=".csv" class="font-body-sm text-body-sm text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border file:border-outline-variant file:bg-surface-container-lowest file:text-on-surface file:font-label-md file:text-label-md hover:file:bg-surface-container-low file:cursor-pointer"/>
+<button id="uploadScheduleBtn" class="flex items-center gap-2 bg-primary text-on-primary px-6 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+<span class="material-symbols-outlined text-sm">upload</span>
+Upload Schedule
+</button>
+</div>
+<p id="scheduleUploadMsg" class="font-label-sm text-label-sm hidden"></p>
+</section>
+<!-- Authorized Personnel Database (Full Width) -->
+<section class="col-span-12 card-surface rounded-xl overflow-hidden">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="badge">badge</span>
+<h4 class="font-headline-sm text-headline-sm">Authorized Personnel Database</h4>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">User Profile</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Access Tier</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Last Verified</th>
+<th class="p-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Action</th>
+</tr>
+</thead>
+<tbody id="admins-table-body" class="divide-y divide-outline-variant"><tr><td colspan="5" class="p-4 text-center text-on-surface-variant font-label-sm">Loading admins...</td></tr></tbody>
+</table>
+</div>
+</section>
+</div>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            slider.addEventListener('input', (e) => {
+                const badge = e.target.parentElement.querySelector('.font-label-sm');
+                if (badge) {
+                    badge.textContent = `${e.target.value}%`;
+                }
+            });
+        });
+
+        // Simple Toggle interaction visualization
+        document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const parent = e.target.closest('.flex');
+                if (e.target.checked) {
+                    parent.style.borderColor = '#0040E0';
+                    parent.style.backgroundColor = '#F3F2FF';
+                } else {
+                    parent.style.borderColor = '#E2E8F0';
+                    parent.style.backgroundColor = '#FFFFFF';
+                }
+            });
+        });
+    </script>
+<script>
+    // ── Load admin name ──────────────────────────────────────
+    const adminName = sessionStorage.getItem('adminName') || 'Admin';
+    const el = document.getElementById('settingsAdminName');
+    if (el) el.textContent = adminName;
+
+    // ── Logout ───────────────────────────────────────────────
+    function logout() {
+        if (!confirm('Are you sure you want to logout?')) return;
+        sessionStorage.removeItem('adminName');
+        fetch('/api/logout', { method: 'POST' })
+            .finally(() => window.location.href = '/login');
+    }
+
+    // ── Upload class schedule CSV ──────────────────────────────
+    function uploadSchedule() {
+        const input = document.getElementById('scheduleCsvInput');
+        const msg   = document.getElementById('scheduleUploadMsg');
+        const btn   = document.getElementById('uploadScheduleBtn');
+        if (!input.files.length) {
+            msg.textContent = 'Choose a CSV file first.';
+            msg.className = 'font-label-sm text-label-sm text-error';
+            msg.classList.remove('hidden');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+
+        btn.disabled = true;
+        msg.textContent = 'Uploading...';
+        msg.className = 'font-label-sm text-label-sm text-on-surface-variant';
+        msg.classList.remove('hidden');
+
+        fetch('/api/upload-schedule', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const errCount = data.errors ? data.errors.length : 0;
+                msg.textContent = `Inserted ${data.inserted} period(s).` + (errCount ? ` ${errCount} row(s) skipped — see console for details.` : '');
+                msg.className = `font-label-sm text-label-sm ${errCount ? 'text-tertiary' : 'text-emerald-600'}`;
+                if (errCount) console.warn('[Schedule Upload] Skipped rows:', data.errors);
+                input.value = '';
+            } else {
+                msg.textContent = data.error || 'Upload failed.';
+                msg.className = 'font-label-sm text-label-sm text-error';
+            }
+        })
+        .catch(() => {
+            msg.textContent = 'Server error — is server.js running?';
+            msg.className = 'font-label-sm text-label-sm text-error';
+        })
+        .finally(() => { btn.disabled = false; });
+    }
+
+    const uploadScheduleBtn = document.getElementById('uploadScheduleBtn');
+    if (uploadScheduleBtn) uploadScheduleBtn.addEventListener('click', uploadSchedule);
+</script>
+<script>
+    // ── Load real admins from DB ──────────────────────────────
+    let currentAdmins   = [];
+    let personnelSearch = '';
+
+    function renderAdmins() {
+        const tbody = document.getElementById('admins-table-body');
+        if (!tbody) return;
+
+        const admins = personnelSearch
+            ? currentAdmins.filter(a =>
+                a.full_name.toLowerCase().includes(personnelSearch) ||
+                String(a.id_number).toLowerCase().includes(personnelSearch))
+            : currentAdmins;
+
+        if (!admins.length) {
+            tbody.innerHTML = currentAdmins.length
+                ? '<tr><td colspan="5" class="p-4 text-center text-on-surface-variant">No personnel match your search</td></tr>'
+                : '<tr><td colspan="5" class="p-4 text-center text-on-surface-variant">No admins registered yet — run register_admin.py</td></tr>';
+            return;
+        }
+            tbody.innerHTML = admins.map(a => `
+            <tr class="hover:bg-surface-container-lowest transition-colors">
+                <td class="p-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-primary-fixed flex items-center justify-center">
+                            <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+                        </div>
+                        <div>
+                            <p class="font-body-md text-body-md font-bold">${a.full_name}</p>
+                            <p class="font-label-sm text-label-sm text-outline">ID: ${a.id_number}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-4">
+                    <span class="px-2 py-1 bg-surface-variant text-on-surface font-label-sm text-label-sm rounded border border-outline-variant">Admin</span>
+                </td>
+                <td class="p-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                        <span class="font-body-sm text-body-sm">Authorized</span>
+                    </div>
+                </td>
+                <td class="p-4 font-label-md text-label-md text-on-surface-variant">${a.created_at}</td>
+                <td class="p-4">
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">—</span>
+                </td>
+            </tr>`).join('');
+    }
+
+    function fetchAdmins() {
+        fetch('/api/admins')
+        .then(r => r.json())
+        .then(admins => {
+            currentAdmins = admins;
+            renderAdmins();
+        })
+        .catch(e => {
+            const tbody = document.getElementById('admins-table-body');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-error">Failed to load admins</td></tr>';
+        });
+    }
+
+    const personnelSearchInput = document.getElementById('personnelSearchInput');
+    if (personnelSearchInput) {
+        personnelSearchInput.addEventListener('input', (e) => {
+            personnelSearch = e.target.value.trim().toLowerCase();
+            renderAdmins();
+        });
+    }
+
+    fetchAdmins();
+</script>
+</body></html>

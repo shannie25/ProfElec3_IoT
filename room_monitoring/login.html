@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SENTRY | Secure Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#54647a",
+                        "outline-variant": "#c4c5d9",
+                        "surface-dim": "#d9d9e6",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#c24100",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#efefff",
+                        "surface-container-high": "#e7e7f4",
+                        "tertiary-fixed-dim": "#ffb59b",
+                        "inverse-surface": "#2e303a",
+                        "on-primary-fixed": "#001356",
+                        "on-surface": "#191b24",
+                        "background": "#fbf8ff",
+                        "primary-fixed-dim": "#b8c3ff",
+                        "on-tertiary-container": "#ffece6",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#434656",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-secondary-fixed": "#0b1c30",
+                        "surface-container-highest": "#e2e1ef",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b8c3ff",
+                        "surface-bright": "#fbf8ff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#380d00",
+                        "secondary-fixed": "#d3e4fe",
+                        "tertiary-fixed": "#ffdbcf",
+                        "surface-container-low": "#f3f2ff",
+                        "surface": "#fbf8ff",
+                        "on-tertiary-fixed-variant": "#812800",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "error": "#ba1a1a",
+                        "secondary": "#505f76",
+                        "surface-variant": "#e2e1ef",
+                        "surface-container": "#ededfa",
+                        "primary-fixed": "#dde1ff",
+                        "on-primary-fixed-variant": "#0035be",
+                        "outline": "#747688",
+                        "inverse-on-surface": "#f0effd",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#0040e0",
+                        "surface-tint": "#124af0",
+                        "primary-container": "#2e5bff",
+                        "tertiary": "#993100",
+                        "on-background": "#191b24",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "2xl": "48px",
+                        "base": "4px",
+                        "gutter": "24px",
+                        "3xl": "64px",
+                        "xl": "32px",
+                        "margin": "32px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["JetBrains Mono", "monospace"],
+                        "body-sm": ["Geist", "sans-serif"],
+                        "headline-sm": ["Geist", "sans-serif"],
+                        "body-lg": ["Geist", "sans-serif"],
+                        "headline-lg": ["Geist", "sans-serif"],
+                        "headline-md": ["Geist", "sans-serif"],
+                        "label-sm": ["JetBrains Mono", "monospace"],
+                        "headline-xl": ["Geist", "sans-serif"],
+                        "body-md": ["Geist", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scanner-line {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #2e5bff, transparent);
+            box-shadow: 0 0 15px #2e5bff;
+            animation: scan 3s ease-in-out infinite;
+        }
+        @keyframes scan {
+            0%, 100% { top: 0%; }
+            50% { top: 100%; }
+        }
+        .biometric-ring {
+            border: 2px solid #e2e8f0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .biometric-active .biometric-ring {
+            border-color: #2e5bff;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(46, 91, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- Top Navigation Placeholder (Fixed context as per hierarchy) -->
+<header class="fixed top-0 left-0 right-0 h-16 bg-surface-container-lowest border-b border-outline-variant flex items-center px-gutter z-50">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">security</span>
+<span class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">SENTRY</span>
+</div>
+<div class="ml-auto flex items-center gap-md">
+<span class="font-label-sm text-label-sm bg-surface-container-high px-2 py-1 rounded text-on-surface-variant">SENTRY ROOM MONITOR</span>
+<span class="material-symbols-outlined text-on-surface-variant">wifi_lock</span>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center pt-16 px-margin">
+<div class="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-xl items-center">
+<!-- Left Side: Biometric Scanning Interface -->
+<div class="flex flex-col items-center justify-center p-xl order-2 md:order-1">
+<div class="relative w-80 h-80 rounded-3xl overflow-hidden biometric-ring bg-on-surface group biometric-active">
+<!-- Live camera feed -->
+<img id="liveCamFeed"
+     src="http://localhost:5001/stream/access"
+     class="w-full h-full object-cover"
+     alt="Live Camera Feed"
+     onerror="this.style.display='none'; document.getElementById('camOffline').style.display='flex'">
+<!-- Camera offline message -->
+<div id="camOffline" class="hidden w-full h-full items-center justify-center flex-col text-white bg-on-surface absolute inset-0">
+    <span class="material-symbols-outlined text-4xl mb-2">videocam_off</span>
+    <p class="font-label-md text-center px-4">Camera offline<br>Start camera_server.py</p>
+</div>
+<!-- Scanner overlay -->
+<div class="absolute inset-0 z-20 pointer-events-none overflow-hidden">
+    <div class="scanner-line absolute w-full top-0"></div>
+</div>
+<!-- Corner brackets -->
+<div class="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-primary z-30"></div>
+<div class="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-primary z-30"></div>
+<div class="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-primary z-30"></div>
+<div class="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-primary z-30"></div>
+<!-- Status label -->
+<div class="absolute bottom-6 left-0 right-0 text-center z-30">
+    <span id="scanLabel" class="font-label-md text-label-md text-primary bg-surface-container-lowest/90 px-4 py-1 rounded-full shadow-sm">
+        SCANNING...
+    </span>
+</div>
+</div>
+<div class="mt-lg text-center">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-2">SENTRY Face Recognition</h2>
+<p class="font-body-md text-on-surface-variant max-w-sm mx-auto">
+                        Position your face within the frame. Our multi-spectral sensors are verifying your identity against the SENTRY Room Monitor database.
+                    </p>
+</div>
+</div>
+<!-- Right Side: Manual Login Section -->
+<div class="bg-surface-container-lowest border border-outline-variant p-xl rounded-2xl shadow-sm order-1 md:order-2">
+<div class="mb-xl">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Access Portal</h1>
+<p class="font-body-md text-on-surface-variant">Please provide your credentials or use the biometric scanner to proceed to the SENTRY environment.</p>
+</div>
+<form class="space-y-lg" onsubmit="event.preventDefault();">
+
+<!-- PRIMARY: Face Scan (at the top) -->
+<div>
+<button type="button" onclick="faceLogin()" class="w-full bg-primary-container text-on-primary py-4 rounded-lg font-headline-sm hover:opacity-90 transition-all flex items-center justify-center gap-md active:scale-[0.98]">
+    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">face</span>
+    <span>Scan Face to Login</span>
+</button>
+<p id="loginMsg" class="text-center font-label-sm mt-2 hidden"></p>
+<!-- Admin name shown after successful scan -->
+<div id="adminNameBox" class="hidden mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-center">
+    <span class="material-symbols-outlined text-emerald-600" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+    <p class="font-headline-sm text-emerald-700 mt-1" id="adminNameText"></p>
+    <p class="font-label-sm text-emerald-600">Access Granted — Redirecting...</p>
+</div>
+</div>
+
+<!-- DIVIDER -->
+<div class="flex items-center gap-md">
+    <div class="flex-1 h-px bg-outline-variant"></div>
+    <span class="font-label-sm text-label-sm text-outline">or use backup login</span>
+    <div class="flex-1 h-px bg-outline-variant"></div>
+</div>
+
+<!-- BACKUP: ID + Password -->
+<div class="space-y-sm">
+<label class="font-label-md text-label-md text-on-surface-variant block ml-1" for="admin-id">Admin ID Number</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">badge</span>
+<input class="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-body-md" id="admin-id" placeholder="2025-00001" type="text"/>
+</div>
+</div>
+<div class="space-y-sm">
+<label class="font-label-md text-label-md text-on-surface-variant block ml-1" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock_open</span>
+<input class="w-full pl-12 pr-4 py-3 bg-white border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-body-md" id="password" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<div>
+<button type="button" onclick="idLogin()" class="w-full bg-surface-container-low border border-outline-variant text-on-surface py-3 rounded-lg font-headline-sm hover:bg-surface-container-high transition-all flex items-center justify-center gap-md active:scale-[0.98]">
+    <span class="material-symbols-outlined">login</span>
+    <span>Login with ID + Password</span>
+</button>
+</div>
+</form>
+<div class="mt-xl pt-xl border-t border-outline-variant">
+<p class="text-center font-label-sm text-label-sm text-outline">
+    System Version 4.0.2-SENTINEL | AES-256 Encrypted
+</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="mt-auto bg-surface-container-lowest border-t border-outline-variant py-md px-gutter flex flex-col md:flex-row justify-between items-center gap-md">
+<div class="flex items-center gap-sm">
+<span class="font-label-md text-label-md font-bold text-on-surface tracking-tight">SENTRY Monitoring System</span>
+<span class="text-outline">|</span>
+<span class="font-body-sm text-body-sm text-secondary">IoT Final Project</span>
+</div>
+<div class="flex gap-lg">
+<a class="font-label-sm text-label-sm text-on-secondary-container hover:text-primary transition-colors" href="#">Documentation</a>
+<a class="font-label-sm text-label-sm text-on-secondary-container hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-secondary-container hover:text-primary transition-colors flex items-center gap-xs" href="#">
+<span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                System Status
+            </a>
+</div>
+</footer>
+<script>
+        // ── Biometric scanner animation ──────────────────────────
+        const biometricContainer = document.querySelector('.biometric-ring').parentElement;
+        setInterval(() => {
+            biometricContainer.classList.toggle('biometric-active');
+        }, 5000);
+
+        // ── Input focus effects ──────────────────────────────────
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.querySelector('.material-symbols-outlined').style.color = '#0040e0';
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.querySelector('.material-symbols-outlined').style.color = '#747688';
+            });
+        });
+
+        // ── Show/hide login message ──────────────────────────────
+        function showMsg(text, isError = true) {
+            const el = document.getElementById('loginMsg');
+            el.textContent = text;
+            el.className = `text-center font-label-sm mt-3 ${isError ? 'text-error' : 'text-emerald-600'}`;
+            el.classList.remove('hidden');
+        }
+
+        // ── Auto-trigger face scan when page loads ───────────────
+        window.addEventListener('load', () => {
+            setTimeout(() => faceLogin(), 1000);  // scan 1 second after page loads
+        });
+
+        // ── ID + Password login ──────────────────────────────────
+        function idLogin() {
+            const id   = document.getElementById('admin-id').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            if (!id || !pass) {
+                showMsg('Please fill in both Admin ID and Password.');
+                return;
+            }
+            showMsg('Verifying credentials...', false);
+
+            fetch('/api/id-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_number: id, password: pass })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    sessionStorage.setItem('adminName', data.name);
+                    showMsg(`Welcome, ${data.name}!`, false);
+                    setTimeout(() => window.location.href = '/dashboard', 600);
+                } else {
+                    showMsg(data.message || 'Invalid ID or password.');
+                }
+            })
+            .catch(() => showMsg('Server error — is server running?'));
+        }
+
+        // ── Face recognition login ───────────────────────────────
+        function faceLogin() {
+            showMsg('Scanning face — look at the camera...', false);
+            document.getElementById('adminNameBox').classList.add('hidden');
+            const label = document.getElementById('scanLabel');
+            if (label) label.textContent = 'SCANNING...';
+
+            fetch('/api/face-login', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.recognized) {
+                    sessionStorage.setItem('adminName', data.name);
+                    // Show admin name in green box
+                    document.getElementById('loginMsg').classList.add('hidden');
+                    document.getElementById('adminNameText').textContent = `Welcome, ${data.name}!`;
+                    document.getElementById('adminNameBox').classList.remove('hidden');
+                    if (label) label.textContent = 'ACCESS GRANTED ✓';
+                    setTimeout(() => window.location.href = '/dashboard', 1500);
+                } else if (data.error) {
+                    showMsg(`Error: ${data.error}`);
+                } else {
+                    showMsg(data.message || 'Face not recognized — look directly at camera and try again.');
+                    if (label) label.textContent = 'NOT RECOGNIZED';
+                    setTimeout(() => { if (label) label.textContent = 'SCANNING...'; }, 3000);
+                }
+            })
+            .catch(() => {
+                showMsg('Camera server not reachable — start camera_server.py first.');
+                if (label) label.textContent = 'OFFLINE';
+            });
+        }
+
+        // ── Allow Enter key on form ──────────────────────────────
+        document.getElementById('password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') idLogin();
+        });
+    </script>
+</body></html>

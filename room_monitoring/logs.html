@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SENTRY | Activity Logs</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=JetBrains+Mono:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#54647a",
+                        "outline-variant": "#c4c5d9",
+                        "surface-dim": "#d9d9e6",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#d0e1fb",
+                        "tertiary-container": "#c24100",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#efefff",
+                        "surface-container-high": "#e7e7f4",
+                        "tertiary-fixed-dim": "#ffb59b",
+                        "inverse-surface": "#2e303a",
+                        "on-primary-fixed": "#001356",
+                        "on-surface": "#191b24",
+                        "background": "#fbf8ff",
+                        "primary-fixed-dim": "#b8c3ff",
+                        "on-tertiary-container": "#ffece6",
+                        "on-primary": "#ffffff",
+                        "on-surface-variant": "#434656",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-secondary-fixed": "#0b1c30",
+                        "surface-container-highest": "#e2e1ef",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#b8c3ff",
+                        "surface-bright": "#fbf8ff",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#380d00",
+                        "secondary-fixed": "#d3e4fe",
+                        "tertiary-fixed": "#ffdbcf",
+                        "surface-container-low": "#f3f2ff",
+                        "surface": "#fbf8ff",
+                        "on-tertiary-fixed-variant": "#812800",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "error": "#ba1a1a",
+                        "secondary": "#505f76",
+                        "surface-variant": "#e2e1ef",
+                        "surface-container": "#ededfa",
+                        "primary-fixed": "#dde1ff",
+                        "on-primary-fixed-variant": "#0035be",
+                        "outline": "#747688",
+                        "inverse-on-surface": "#f0effd",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#0040e0",
+                        "surface-tint": "#124af0",
+                        "primary-container": "#2e5bff",
+                        "tertiary": "#993100",
+                        "on-background": "#191b24",
+                        "error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "2xl": "48px",
+                        "base": "4px",
+                        "gutter": "24px",
+                        "3xl": "64px",
+                        "xl": "32px",
+                        "margin": "32px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["JetBrains Mono", "monospace"],
+                        "body-sm": ["Geist", "sans-serif"],
+                        "headline-sm": ["Geist", "sans-serif"],
+                        "body-lg": ["Geist", "sans-serif"],
+                        "headline-lg": ["Geist", "sans-serif"],
+                        "headline-md": ["Geist", "sans-serif"],
+                        "label-sm": ["JetBrains Mono", "monospace"],
+                        "headline-xl": ["Geist", "sans-serif"],
+                        "body-md": ["Geist", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #fbf8ff;
+            color: #191b24;
+            font-family: 'Geist', sans-serif;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .data-table-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .data-table-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .data-table-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid #E2E8F0;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-background border-r border-outline-variant flex flex-col py-lg z-50">
+<div class="px-lg mb-2xl">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">SENTRY</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">SENTRY ROOM MONITOR</p>
+</div>
+<nav class="flex-1 px-md space-y-base">
+<a class="flex items-center gap-md text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-low transition-colors group" href="/dashboard">
+<span class="material-symbols-outlined group-hover:text-primary">videocam</span>
+<span class="font-label-md text-label-md">Live View</span>
+</a>
+<a class="flex items-center gap-md bg-secondary-container text-on-secondary-container rounded-lg px-4 py-3 border-l-4 border-primary shadow-sm" href="/logs">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">list_alt</span>
+<span class="font-label-md text-label-md font-bold">Activity Logs</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-4 py-3 rounded-lg hover:bg-surface-container-low transition-colors group" href="/settings">
+<span class="material-symbols-outlined group-hover:text-primary">admin_panel_settings</span>
+<span class="font-label-md text-label-md">Admin & Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-lg pt-lg border-t border-outline-variant space-y-md">
+<div class="flex items-center gap-md p-2 bg-surface-container-low rounded-xl">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<p id="logsAdminName" class="font-label-md text-label-md text-on-surface font-bold truncate">Admin</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">SENTRY Administrator</p>
+</div>
+</div>
+<button onclick="logout()" class="w-full flex items-center gap-sm px-3 py-2 rounded-lg text-error hover:bg-error/10 transition-colors font-label-md text-label-md">
+<span class="material-symbols-outlined text-sm">logout</span>
+Logout
+</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center h-16 px-gutter sticky top-0 bg-surface z-40 border-b border-outline-variant">
+<div class="flex items-center gap-md">
+<h2 class="font-headline-sm text-headline-sm font-bold text-primary">Security Monitor</h2>
+</div>
+<div class="flex items-center gap-lg">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input id="logSearchInput" class="pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-sm text-body-sm w-64 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" placeholder="Search event logs..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<div class="p-gutter flex-1">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-lg gap-md">
+<div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Activity Logs</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Real-time event tracking and motion detection history for all monitored rooms.</p>
+</div>
+<div class="flex items-center gap-3">
+<button id="refreshLogsBtn" class="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-md">refresh</span>
+                        Refresh
+                    </button>
+<button id="exportCsvBtn" class="flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-outline-variant text-primary font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined text-md">download</span>
+                        Export CSV
+                    </button>
+</div>
+</div>
+<!-- Bento Layout Controls -->
+<div class="bento-grid mb-gutter">
+<!-- Filter Panel -->
+<div class="col-span-12 glass-card p-6 rounded-xl flex flex-wrap items-center gap-gutter">
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase">Source Camera</label>
+<div id="camera-filter" class="flex gap-2">
+<button data-camera="all" class="px-4 py-2 bg-primary text-white rounded-lg font-label-md text-label-md">All Cameras</button>
+<button data-camera="IC1004" class="px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-lg font-label-md text-label-md hover:bg-outline-variant transition-colors">IC1004</button>
+<button data-camera="IC1005" class="px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-lg font-label-md text-label-md hover:bg-outline-variant transition-colors">IC1005</button>
+</div>
+</div>
+</div>
+<!-- Table Content -->
+<div class="col-span-12 glass-card rounded-xl overflow-hidden border border-outline-variant">
+<div class="data-table-container overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-gutter py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Timestamp</th>
+<th class="px-gutter py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Camera Source</th>
+<th class="px-gutter py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Event Captured</th>
+<th class="px-gutter py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-gutter py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody id="logs-table-body" class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-gutter py-4 font-label-md text-label-md font-medium text-on-surface">2023-10-27 14:02:11</td>
+<td class="px-gutter py-4">
+<div class="flex items-center gap-2 font-body-md text-body-md">
+<span class="material-symbols-outlined text-primary text-sm">videocam</span>
+                                            Main Entry (CAM_01)
+                                        </div>
+</td>
+<td class="px-gutter py-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface">Human Motion Detected</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant italic">Entrance perimeter breached</span>
+</div>
+</td>
+<td class="px-gutter py-4">
+<span class="px-2 py-1 rounded-md bg-tertiary-fixed text-on-tertiary-fixed-variant font-label-sm text-label-sm flex w-fit items-center gap-1">
+<span class="w-1.5 h-1.5 bg-tertiary rounded-full"></span>
+                                            Critical Alert
+                                        </span>
+</td>
+<td class="px-gutter py-4 text-right">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</td></tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-gutter py-4 font-label-md text-label-md font-medium text-on-surface">2023-10-27 13:58:42</td>
+<td class="px-gutter py-4">
+<div class="flex items-center gap-2 font-body-md text-body-md">
+<span class="material-symbols-outlined text-primary text-sm">videocam</span>
+                                            Corner Shelf (CAM_02)
+                                        </div>
+</td>
+<td class="px-gutter py-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface">Light Change Detected</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant italic">Ambient shift in sector B</span>
+</div>
+</td>
+<td class="px-gutter py-4">
+<span class="px-2 py-1 rounded-md bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm flex w-fit items-center gap-1">
+<span class="w-1.5 h-1.5 bg-secondary rounded-full"></span>
+                                            Logged
+                                        </span>
+</td>
+<td class="px-gutter py-4 text-right">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-gutter py-4 font-label-md text-label-md font-medium text-on-surface">2023-10-27 13:45:00</td>
+<td class="px-gutter py-4">
+<div class="flex items-center gap-2 font-body-md text-body-md">
+<span class="material-symbols-outlined text-primary text-sm">videocam</span>
+                                            Main Entry (CAM_01)
+                                        </div>
+</td>
+<td class="px-gutter py-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface">System Diagnostic</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant italic">Routine camera recalibration</span>
+</div>
+</td>
+<td class="px-gutter py-4">
+<span class="px-2 py-1 rounded-md bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm flex w-fit items-center gap-1">
+<span class="w-1.5 h-1.5 bg-outline rounded-full"></span>
+                                            System
+                                        </span>
+</td>
+<td class="px-gutter py-4 text-right">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-lowest transition-colors group">
+<td class="px-gutter py-4 font-label-md text-label-md font-medium text-on-surface">2023-10-27 13:30:15</td>
+<td class="px-gutter py-4">
+<div class="flex items-center gap-2 font-body-md text-body-md">
+<span class="material-symbols-outlined text-primary text-sm">videocam</span>
+                                            Corner Shelf (CAM_02)
+                                        </div>
+</td>
+<td class="px-gutter py-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface">Motion Cleared</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant italic">Sector B status: Idle</span>
+</div>
+</td>
+<td class="px-gutter py-4">
+<span class="px-2 py-1 rounded-md bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm flex w-fit items-center gap-1">
+<span class="w-1.5 h-1.5 bg-secondary rounded-full"></span>
+                                            Logged
+                                        </span>
+</td>
+<td class="px-gutter py-4 text-right">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between">
+<span id="logs-count" class="font-label-sm text-label-sm text-on-surface-variant">Showing 0 of 0 entries</span>
+</div>
+</div>
+<!-- Stats Cards (Asymmetric Bento) -->
+<div class="col-span-12 lg:col-span-6 glass-card p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Total Motion Today</p>
+<h4 id="stat-motion-today" class="font-headline-lg text-headline-lg text-primary mt-1">—</h4>
+</div>
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-2 rounded-lg">motion_sensor_active</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-4">
+Motion-detected events logged today, across all rooms.
+                    </p>
+</div>
+<div class="col-span-12 lg:col-span-6 glass-card p-6 rounded-xl flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Critical Alerts</p>
+<h4 id="stat-critical-alerts" class="font-headline-lg text-headline-lg text-tertiary mt-1">—</h4>
+</div>
+<span class="material-symbols-outlined text-tertiary bg-tertiary-fixed p-2 rounded-lg">warning</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-4">
+Motion detected outside scheduled class hours today.
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions and effects
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('mousedown', () => {
+                    button.classList.add('scale-95');
+                });
+                button.addEventListener('mouseup', () => {
+                    button.classList.remove('scale-95');
+                });
+                button.addEventListener('mouseleave', () => {
+                    button.classList.remove('scale-95');
+                });
+            });
+        });
+    </script>
+<script>
+    // ── Load admin name ──────────────────────────────────────
+    const adminName = sessionStorage.getItem('adminName') || 'Admin';
+    const el = document.getElementById('logsAdminName');
+    if (el) el.textContent = adminName;
+
+    // ── Logout ───────────────────────────────────────────────
+    function logout() {
+        if (!confirm('Are you sure you want to logout?')) return;
+        sessionStorage.removeItem('adminName');
+        fetch('/api/logout', { method: 'POST' })
+            .finally(() => window.location.href = '/login');
+    }
+
+    // ── Fetch real logs from DB ──────────────────────────────
+    let currentEvents = [];
+    let cameraFilter  = 'all';
+    let logSearch     = '';
+
+    function renderLogs() {
+        const container = document.getElementById('logs-table-body');
+        if (!container) return;
+
+        let events = cameraFilter === 'all'
+            ? currentEvents
+            : currentEvents.filter(e => e.camera === cameraFilter);
+
+        if (logSearch) {
+            events = events.filter(e =>
+                e.time.toLowerCase().includes(logSearch) ||
+                e.camera.toLowerCase().includes(logSearch) ||
+                (e.type || '').toLowerCase().includes(logSearch) ||
+                (e.status || '').toLowerCase().includes(logSearch));
+        }
+
+        const countEl = document.getElementById('logs-count');
+        if (countEl) countEl.textContent = `Showing ${events.length} of ${currentEvents.length} entries`;
+
+        if (!events.length) {
+            container.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-on-surface-variant">${currentEvents.length ? 'No logs match your search' : 'No logs yet'}</td></tr>`;
+            return;
+        }
+        container.innerHTML = events.map(e => {
+            const isMotion = e.type === 'motion_detected';
+            const isAlert  = e.status === 'anomaly';
+            return `<tr class="border-b border-outline-variant hover:bg-surface-container-low">
+                <td class="py-3 px-4 font-label-sm">${e.time}</td>
+                <td class="py-3 px-4 font-label-sm">${e.camera}</td>
+                <td class="py-3 px-4">
+                    <span class="flex items-center gap-sm font-label-sm ${isMotion ? 'text-orange-500' : 'text-emerald-600'}">
+                        <span class="material-symbols-outlined text-sm">${isMotion ? 'directions_run' : 'do_not_disturb'}</span>
+                        ${isMotion ? 'Motion Detected' : 'No Motion'}
+                    </span>
+                </td>
+                <td class="py-3 px-4">
+                    <span class="font-label-sm px-2 py-1 rounded-full ${isAlert ? 'bg-error/10 text-error' : 'bg-emerald-100 text-emerald-700'}">
+                        ${isAlert ? 'Outside Schedule' : 'Expected'}
+                    </span>
+                </td>
+                <td class="py-3 px-4 font-label-sm">
+                    ${e.screenshot ? '<a href="'+e.screenshot+'" target="_blank" class="text-primary underline">View</a>' : '—'}
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function fetchLogs() {
+        fetch('/api/events?limit=100')
+        .then(r => r.json())
+        .then(events => {
+            currentEvents = events;
+            renderLogs();
+        })
+        .catch(e => console.warn('Logs fetch failed:', e));
+    }
+
+    // ── Fetch real stats for the bottom cards ─────────────────
+    function fetchLogStats() {
+        fetch('/api/stats')
+        .then(r => r.json())
+        .then(data => {
+            const motionEl = document.getElementById('stat-motion-today');
+            const alertsEl = document.getElementById('stat-critical-alerts');
+            if (motionEl) motionEl.textContent = data.motion_today ?? '—';
+            if (alertsEl) alertsEl.textContent = data.alerts_today ?? '—';
+        })
+        .catch(e => console.warn('Stats fetch failed:', e));
+    }
+
+    // ── Camera filter buttons ─────────────────────────────────
+    const cameraFilterEl = document.getElementById('camera-filter');
+    if (cameraFilterEl) {
+        cameraFilterEl.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                cameraFilter = btn.dataset.camera;
+                cameraFilterEl.querySelectorAll('button').forEach(b => {
+                    b.className = 'px-4 py-2 bg-surface-container-high text-on-surface-variant rounded-lg font-label-md text-label-md hover:bg-outline-variant transition-colors';
+                });
+                btn.className = 'px-4 py-2 bg-primary text-white rounded-lg font-label-md text-label-md';
+                renderLogs();
+            });
+        });
+    }
+
+    const logSearchInput = document.getElementById('logSearchInput');
+    if (logSearchInput) {
+        logSearchInput.addEventListener('input', (e) => {
+            logSearch = e.target.value.trim().toLowerCase();
+            renderLogs();
+        });
+    }
+
+    fetchLogs();
+    fetchLogStats();
+    setInterval(fetchLogs, 10000);
+    setInterval(fetchLogStats, 10000);
+
+    // ── Export CSV ────────────────────────────────────────────
+    function exportCsv() {
+        if (!currentEvents.length) return;
+        const header = ['Timestamp', 'Camera', 'Event', 'Status', 'Screenshot'];
+        const rows = currentEvents.map(e => [
+            e.time,
+            e.camera,
+            e.type === 'motion_detected' ? 'Motion Detected' : 'No Motion',
+            e.status === 'anomaly' ? 'Outside Schedule' : 'Expected',
+            e.screenshot || '',
+        ]);
+        const csv = [header, ...rows]
+            .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+            .join('\r\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sentry-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    const exportBtn = document.getElementById('exportCsvBtn');
+    if (exportBtn) exportBtn.addEventListener('click', exportCsv);
+
+    const refreshBtn = document.getElementById('refreshLogsBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', () => {
+        fetchLogs();
+        fetchLogStats();
+    });
+</script>
+</body></html>
